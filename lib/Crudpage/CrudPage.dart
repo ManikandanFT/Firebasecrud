@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../models/items.dart';
+
 class CRUDPage extends StatefulWidget {
   @override
   _CRUDPageState createState() => _CRUDPageState();
@@ -10,7 +12,7 @@ class CRUDPage extends StatefulWidget {
 class _CRUDPageState extends State<CRUDPage> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final TextEditingController _controller = TextEditingController();
-  String _documentId = '';
+  Item? _currentItem;
 
   Future<void> createRecord() async {
     if (_controller.text.isNotEmpty) {
@@ -18,17 +20,20 @@ class _CRUDPageState extends State<CRUDPage> {
         'name': _controller.text,
       });
       setState(() {
-        _documentId = docRef.id;
+        _currentItem = Item(id: docRef.id, name: _controller.text);
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Record created')));
     }
   }
 
   Future<void> readRecord() async {
-    if (_documentId.isNotEmpty) {
-      DocumentSnapshot doc = await firestore.collection('items').doc(_documentId).get();
+    if (_currentItem?.id.isNotEmpty ?? false) {
+      DocumentSnapshot doc = await firestore.collection('items').doc(_currentItem!.id).get();
       if (doc.exists) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Record: ${doc['name']}')));
+        setState(() {
+          _currentItem = Item.fromFirestore(doc); // Create Item from Firestore document
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Record: ${_currentItem!.name}')));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No record found')));
       }
@@ -36,19 +41,23 @@ class _CRUDPageState extends State<CRUDPage> {
   }
 
   Future<void> updateRecord() async {
-    if (_documentId.isNotEmpty && _controller.text.isNotEmpty) {
-      await firestore.collection('items').doc(_documentId).update({
+    if (_currentItem?.id.isNotEmpty ?? false && _controller.text.isNotEmpty) {
+      await firestore.collection('items').doc(_currentItem!.id).update({
         'name': _controller.text,
+      });
+      setState(() {
+        _currentItem!.name = _controller.text; // Update the local item
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Record updated')));
     }
   }
 
   Future<void> deleteRecord() async {
-    if (_documentId.isNotEmpty) {
-      await firestore.collection('items').doc(_documentId).delete();
+    if (_currentItem?.id.isNotEmpty ?? false) {
+      await firestore.collection('items').doc(_currentItem!.id).delete();
       setState(() {
-        _documentId = '';
+        _currentItem = null; // Clear current item
+        _controller.clear(); // Clear the text field
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Record deleted')));
     }
@@ -78,7 +87,6 @@ class _CRUDPageState extends State<CRUDPage> {
                   color: Colors.green,
                   onTap: createRecord,
                 ),
-
                 CustomButton(
                   label: 'Read',
                   color: Colors.blue,
@@ -86,7 +94,7 @@ class _CRUDPageState extends State<CRUDPage> {
                 ),
               ],
             ),
-            SizedBox(height: 50,),
+            SizedBox(height: 50),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -109,18 +117,18 @@ class _CRUDPageState extends State<CRUDPage> {
   }
 }
 
-// Custom Button Widget
+// Define the CustomButton widget here
 class CustomButton extends StatelessWidget {
   final String label;
   final Color color;
-  final Function onTap;
+  final VoidCallback onTap;
 
   CustomButton({required this.label, required this.color, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => onTap(),
+      onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 15, horizontal: 25),
         decoration: BoxDecoration(
@@ -138,3 +146,4 @@ class CustomButton extends StatelessWidget {
     );
   }
 }
+
