@@ -31,7 +31,7 @@ class _CRUDPageState extends State<CRUDPage> {
       DocumentSnapshot doc = await firestore.collection('items').doc(_currentItem!.id).get();
       if (doc.exists) {
         setState(() {
-          _currentItem = Item.fromFirestore(doc); // Create Item from Firestore document
+          _currentItem = Item.fromFirestore(doc);
         });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Record: ${_currentItem!.name}')));
       } else {
@@ -46,7 +46,7 @@ class _CRUDPageState extends State<CRUDPage> {
         'name': _controller.text,
       });
       setState(() {
-        _currentItem!.name = _controller.text; // Update the local item
+        _currentItem!.name = _controller.text;
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Record updated')));
     }
@@ -56,8 +56,8 @@ class _CRUDPageState extends State<CRUDPage> {
     if (_currentItem?.id.isNotEmpty ?? false) {
       await firestore.collection('items').doc(_currentItem!.id).delete();
       setState(() {
-        _currentItem = null; // Clear current item
-        _controller.clear(); // Clear the text field
+        _currentItem = null;
+        _controller.clear();
       });
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Record deleted')));
     }
@@ -117,7 +117,6 @@ class _CRUDPageState extends State<CRUDPage> {
   }
 }
 
-// Define the CustomButton widget here
 class CustomButton extends StatelessWidget {
   final String label;
   final Color color;

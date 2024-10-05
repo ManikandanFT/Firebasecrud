@@ -10,7 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (kIsWeb) {
-    // If running on the web, use the web-specific Firebase initialization.
+
     await Firebase.initializeApp(
       options: FirebaseOptions(
         apiKey: 'AIzaSyBLoieiyGxGg_je1LX25kkG4WoigXP_cCE',
@@ -22,7 +22,7 @@ void main() async {
       ),
     );
   } else {
-    // For mobile platforms, the regular initialization.
+
     await Firebase.initializeApp();
   }
 

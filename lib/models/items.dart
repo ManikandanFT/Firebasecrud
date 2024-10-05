@@ -1,21 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Item {
-  String id; // Document ID from Firestore
+  String id;
   String name;
 
   Item({required this.id, required this.name});
 
-  // Factory constructor to create an Item from a Firestore document
+
   factory Item.fromFirestore(DocumentSnapshot doc) {
-    Map data = doc.data() as Map; // Cast to Map
+    Map data = doc.data() as Map;
     return Item(
-      id: doc.id, // Use the document ID
-      name: data['name'] ?? '', // Use a default value if 'name' is not found
+      id: doc.id,
+      name: data['name'] ?? '',
     );
   }
 
-  // Convert an Item to a map for Firestore
+
   Map<String, dynamic> toMap() {
     return {
       'name': name,
